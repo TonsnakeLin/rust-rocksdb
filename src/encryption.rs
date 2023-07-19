@@ -60,6 +60,7 @@ pub trait EncryptionKeyManager: Sync + Send {
     fn new_file(&self, fname: &str) -> Result<FileEncryptionInfo>;
     fn delete_file(&self, fname: &str) -> Result<()>;
     fn link_file(&self, src_fname: &str, dst_fname: &str) -> Result<()>;
+    fn is_encrypted(&self) -> bool;
 }
 
 // Copy rust-owned error message to C-owned string. Caller is responsible to delete the result.
@@ -183,6 +184,13 @@ extern "C" fn encryption_key_manager_link_file<T: EncryptionKeyManager>(
     }
 }
 
+extern "C" fn encryption_key_manager_is_encrypted<T: EncryptionKeyManager>(
+    ctx: *mut c_void
+) -> bool {
+    let key_manager = unsafe { &*(ctx as *mut T) };
+    return key_manager.is_encrypted();
+}
+
 pub struct DBEncryptionKeyManager {
     pub(crate) inner: *mut DBEncryptionKeyManagerInstance,
 }
@@ -201,6 +209,7 @@ impl DBEncryptionKeyManager {
                 encryption_key_manager_new_file::<T>,
                 encryption_key_manager_delete_file::<T>,
                 encryption_key_manager_link_file::<T>,
+                encryption_key_manager_is_encrypted::<T>,
             )
         };
         DBEncryptionKeyManager { inner: instance }
@@ -337,6 +346,10 @@ impl EncryptionKeyManager for DBEncryptionKeyManager {
             }
         }
         ret
+    }
+
+    fn is_encrypted(&self) -> bool {
+        return crocksdb_encryption_key_manager_is_encrypted(self.inner);
     }
 }
 

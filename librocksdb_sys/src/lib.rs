@@ -1836,6 +1836,7 @@ extern "C" {
     pub fn crocksdb_env_destroy(env: *mut DBEnv);
     pub fn crocksdb_env_set_background_threads(env: *mut DBEnv, n: c_int);
     pub fn crocksdb_env_set_high_priority_background_threads(env: *mut DBEnv, n: c_int);
+    pub fn crocksdb_env_is_encrypted(env: *mut DBEnv) -> bool;
 
     // EnvOptions
     pub fn crocksdb_envoptions_create() -> *mut EnvOptions;
@@ -1969,7 +1970,10 @@ extern "C" {
         src_fname: *const c_char,
         dst_fname: *const c_char,
     ) -> *const c_char;
-
+    #[cfg(feature = "encryption")]
+    pub fn crocksdb_encryption_key_manager_is_encrypted(
+        key_manager: *mut DBEncryptionKeyManagerInstance
+    ) -> bool;
     #[cfg(feature = "encryption")]
     pub fn crocksdb_key_managed_encrypted_env_create(
         base_env: *mut DBEnv,

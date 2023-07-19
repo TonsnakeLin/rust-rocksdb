@@ -4318,6 +4318,10 @@ void crocksdb_env_set_high_priority_background_threads(crocksdb_env_t* env,
   env->rep->SetBackgroundThreads(n, Env::HIGH);
 }
 
+unsigned char crocksdb_env_is_encrypted(crocksdb_env_t* env) {
+  return env->rep->IsEncryptedEnv();
+}
+
 void crocksdb_env_join_all_threads(crocksdb_env_t* env) {
   env->rep->WaitForJoin();
 }
@@ -4460,6 +4464,7 @@ struct crocksdb_encryption_key_manager_impl_t : public KeyManager {
   crocksdb_encryption_key_manager_new_file_cb new_file;
   crocksdb_encryption_key_manager_delete_file_cb delete_file;
   crocksdb_encryption_key_manager_link_file_cb link_file;
+  crocksdb_encryption_key_manager_is_encrypted_cb is_encrypted;
 
   virtual ~crocksdb_encryption_key_manager_impl_t() { destructor(state); }
 
@@ -4509,6 +4514,10 @@ struct crocksdb_encryption_key_manager_impl_t : public KeyManager {
     }
     return s;
   }
+
+  virtual bool IsEncryptedEnv() override{
+    return is_encrypted(state);
+  } 
 };
 
 crocksdb_encryption_key_manager_t* crocksdb_encryption_key_manager_create(
@@ -4516,7 +4525,8 @@ crocksdb_encryption_key_manager_t* crocksdb_encryption_key_manager_create(
     crocksdb_encryption_key_manager_get_file_cb get_file,
     crocksdb_encryption_key_manager_new_file_cb new_file,
     crocksdb_encryption_key_manager_delete_file_cb delete_file,
-    crocksdb_encryption_key_manager_link_file_cb link_file) {
+    crocksdb_encryption_key_manager_link_file_cb link_file,
+    crocksdb_encryption_key_manager_is_encrypted_cb is_encrypted) {
   std::shared_ptr<crocksdb_encryption_key_manager_impl_t> key_manager_impl =
       std::make_shared<crocksdb_encryption_key_manager_impl_t>();
   key_manager_impl->state = state;
@@ -4525,6 +4535,7 @@ crocksdb_encryption_key_manager_t* crocksdb_encryption_key_manager_create(
   key_manager_impl->new_file = new_file;
   key_manager_impl->delete_file = delete_file;
   key_manager_impl->link_file = link_file;
+  key_manager_impl->is_encrypted = is_encrypted;
   crocksdb_encryption_key_manager_t* key_manager =
       new crocksdb_encryption_key_manager_t;
   key_manager->rep = key_manager_impl;
@@ -4584,6 +4595,11 @@ const char* crocksdb_encryption_key_manager_link_file(
     return strdup(s.ToString().c_str());
   }
   return nullptr;
+}
+
+unsigned char crocksdb_encryption_key_manager_is_encrypted(crocksdb_encryption_key_manager_t* key_manager) {
+  assert(key_manager != nullptr && key_manager->rep != nullptr);
+  return key_manager->rep->IsEncryptedEnv();
 }
 
 crocksdb_env_t* crocksdb_key_managed_encrypted_env_create(

@@ -2804,6 +2804,12 @@ impl Env {
             crocksdb_ffi::crocksdb_env_set_high_priority_background_threads(self.inner, n);
         }
     }
+
+    pub fn is_encrypted_env(&self) -> bool {
+        unsafe {
+            crocksdb_ffi::crocksdb_env_is_encrypted(self.inner)
+        }
+    }
 }
 
 impl Drop for Env {
