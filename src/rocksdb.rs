@@ -166,6 +166,10 @@ impl DB {
     pub fn is_titan(&self) -> bool {
         !self.opts.titan_inner.is_null()
     }
+
+    pub fn has_encrypted_env(&self) -> bool {
+        self.opts.env().unwrap().is_encrypted_env()
+    }
 }
 
 pub struct Snapshot<D: Deref<Target = DB>> {
