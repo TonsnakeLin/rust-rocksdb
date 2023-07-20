@@ -1942,6 +1942,7 @@ extern "C" {
         ) -> *const c_char,
         delete_file: extern "C" fn(*mut c_void, *const c_char) -> *const c_char,
         link_file: extern "C" fn(*mut c_void, *const c_char, *const c_char) -> *const c_char,
+        is_encrypted: extern "C" fn(*mut c_void) -> bool,
     ) -> *mut DBEncryptionKeyManagerInstance;
     #[cfg(feature = "encryption")]
     pub fn crocksdb_encryption_key_manager_destroy(
