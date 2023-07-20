@@ -1817,7 +1817,7 @@ typedef const char* (*crocksdb_encryption_key_manager_delete_file_cb)(
     void* state, const char* fname);
 typedef const char* (*crocksdb_encryption_key_manager_link_file_cb)(
     void* state, const char* src_fname, const char* dst_fname);
-typedef bool (*crocksdb_encryption_key_manager_is_encrypted_cb)();    
+typedef bool (*crocksdb_encryption_key_manager_is_encrypted_cb)(void* state);    
 
 extern C_ROCKSDB_LIBRARY_API crocksdb_encryption_key_manager_t*
 crocksdb_encryption_key_manager_create(
